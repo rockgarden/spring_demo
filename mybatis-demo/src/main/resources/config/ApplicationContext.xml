@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!-- 头部的信息就是声明 xml 文档配置标签的规则的限制与规范。 -->
+<beans xmlns="http://www.springframework.org/schema/beans" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:context="http://www.springframework.org/schema/context" xsi:schemaLocation="http://www.springframework.org/schema/beans
+       http://www.springframework.org/schema/beans/spring-beans.xsd
+       http://www.springframework.org/schema/context
+       http://www.springframework.org/schema/context/spring-context.xsd">
+
+    <!-- 加载配置文件 -->
+    <!-- “context:property-placeholder” 配置是用于读取工程中的静态属性文件，然后在其他配置中使用时，就可以采用 “${属性名}” 的方式获取该属性文件中的配置参数值。 -->
+    <context:property-placeholder location="classpath:config/db.properties" />
+
+    <!-- 配置数据源 -->
+    <!-- 配置了一个名为 “dataSrouce” 的 bean 的信息，实际上是连接数据库的数据源。 -->
+    <bean id="dataSource" class="org.springframework.jdbc.datasource.DriverManagerDataSource">
+        <property name="driverClassName" value="${jdbc.driver}" />
+        <property name="url" value="${jdbc.url}" />
+        <property name="username" value="${jdbc.username}" />
+        <property name="password" value="${jdbc.password}" />
+    </bean>
+
+    <!-- sqlSessionFactory -->
+    <!-- SqlSessionFactoryBean来替代SqlSessionFactoryBuilder来创建SqlSession -->
+    <!-- 设置 sqlSessionFactory 的 bean 实现类为 MyBatis 与 Spring 整合 jar 包中的 SqlSessionFactoryBean 类，在其中只需要注入两个参数：一个是 MyBatis 的全局配置文件，一个是上面配置的数据源 bean -->
+    <bean id="sqlSessionFactory" class="org.mybatis.spring.SqlSessionFactoryBean">
+        <!-- 加载 MyBatis 的配置文件 -->
+        <property name="configLocation" value="config/MyBatisConfig.xml" />
+        <!-- 数据源 -->
+        <property name="dataSource" ref="dataSource" />
+        <!-- 指明mapper配置文件 -->
+        <!-- <property name="mapperLocations" value="classpath:com/eliteams/quick4j/web/dao/*.xml" /> -->
+    </bean>
+
+    <!-- 原始 DAO 接口 -->
+    <!-- DAO 实现类继承了 SqlSessionDaoSupport 父类后，就无须自己定义获取 SqlSession 会话实例类方法了，该父类会默认加载数据源信息并提供获取 SqlSession 类的方法。 -->
+    <bean id="userDao" class="com.example.mybatisdemo.dao.UserDaoImpl">
+        <property name="sqlSessionFactory" ref="sqlSessionFactory" />
+    </bean>
+
+    <!-- Mapper 扫描器 -->
+    <!-- 从 mapper 包中扫描出 Mapper 接口，自动创建代理对象并且在 Spring 容器中注入。自动扫描出来的 Mapper 的 bean 的 id 为 mapper 类名（首字母小写），所以这里获取的就是名为 “userQueryMapper” 的 mapper 代理对象。 -->
+    <bean class="org.mybatis.spring.mapper.MapperScannerConfigurer">
+        <!-- 扫描 com.example.mybatisdemo.mapper 包下的组件 -->
+        <property name="basePackage" value="com.example.mybatisdemo.mapper" />
+        <!-- 在单数据源的情况下可以不写sqlSessionFactoryBeanName -->
+        <property name="sqlSessionFactoryBeanName" value="sqlSessionFactory" />
+    </bean>
+
+
+</beans>

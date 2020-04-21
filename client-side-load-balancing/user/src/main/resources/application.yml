@@ -1,0 +1,16 @@
+spring:
+  application:
+    name: user
+
+server:
+  port: 8888
+
+# client name
+say-hello:
+  ribbon:
+    eureka:
+      enabled: false
+    listOfServers: localhost:8090,localhost:9999
+    # Set the ribbon.eureka.enabled property to false and instead give Ribbon a static listOfServers. 
+    # remove the services that you don't need, like localhost:9092 for gradle instance.
+    ServerListRefreshInterval: 15000

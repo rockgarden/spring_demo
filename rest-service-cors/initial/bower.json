@@ -1,0 +1,22 @@
+{
+  "name": "rest-service-cors",
+  "version": "0.0.1",
+  "authors": [
+    "Wangkan <rockwk@msn.com>"
+  ],
+  "description": "",
+  "main": "",
+  "license": "MIT",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "public/lib",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+    "rest": "~1",
+    "curl": "~0.8"
+  }
+}

@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE configuration PUBLIC "-//mybatis.org//DTD Config 3.0//EN" "http://mybatis.org/dtd/mybatis-3-config.dtd">
+<configuration>
+
+    <!-- settings -->
+    <settings>
+        <!-- 打开延迟加载的开关 -->
+        <setting name="lazyLoadingEnabled" value="true" />
+        <!-- 将积极加载改为消极加载（即按需加载） -->
+        <setting name="aggressiveLazyLoading" value="false" />
+        <!-- 打开全局缓存开关（二级缓存）默认值就是 true -->
+        <setting name="cacheEnabled" value="true" />
+    </settings>
+
+    <!-- 别名定义 -->
+    <!-- 在 typeAliases 中设置了一个 package 的别名扫描路径，在该路径下的 Java 实体类都可以拥有一个别名（即首字母小写的类名） -->
+    <typeAliases>
+        <package name="com.example.mybatisdemo" />
+    </typeAliases>
+
+    <!-- 加载映射文件 -->
+    <mappers>
+        <!-- 使用 mapper 标签配置了即将要加载的 Mapper 映射文件的资源路径，当然也可以使用 package 标签，配置 mapper 代理接口所在的包名，以批量加载 mapper 代理对象。 -->
+        <!-- 通过 resource 方法一次加载一个映射文件 -->
+        <mapper resource="mapper/UserMapper.xml" />
+        <!-- 批量加载mapper -->
+        <package name="com.example.mybatisdemo.mapper" />
+    </mappers>
+</configuration>

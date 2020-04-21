@@ -1,0 +1,51 @@
+{
+	"folders": [
+		{
+			"path": "."
+		},
+		{
+			"name": "Securing web demo",
+			"path": "/Volumes/Data/GitHub/SpringBootDemo/securing-web"
+		},
+		{
+			"name": "Thymeleaf demo",
+			"path": "/Volumes/Data/GitHub/SpringBootDemo/serving-web-content"
+		},
+		{
+			"path": "/Volumes/Data/GitHub/SpringBootDemo/async-method"
+		},
+		{
+			"path": "/Volumes/Data/GitHub/SpringBootDemo/consuming-rest"
+		},
+		{
+			"path": "/Volumes/Data/GitHub/SpringBootDemo/messaging-stomp-websocket"
+		},
+		{
+			"path": "/Volumes/Data/GitHub/SpringBootDemo/rest-service"
+		},
+		{
+			"path": "/Volumes/Data/GitHub/SpringBootDemo/rest-service-cors"
+		},
+		{
+			"path": "/Volumes/Data/GitHub/SpringBootDemo/messaging-redis"
+		},
+		{
+			"path": "/Volumes/Data/GitHub/SpringBootDemo/messaging-rabbitmq"
+		}
+	],
+	// Workspace global settings
+	// OPEN EDITORS and Quick Open (⌘P) lists include the folder name.
+	"settings": {
+		"window.zoomLevel": 0,
+		"files.autoSave": "afterDelay",
+		"editor.fontSize": 14,
+		"workbench.editor.labelFormat": "medium",
+		"maven.view": "flat",
+		"java.configuration.updateBuildConfiguration": "interactive" // see the folder displayed in the tabbed header
+	},
+	"extensions": {},
+	"launch": {
+		"configurations": [],
+		"compounds": []
+	}
+}
