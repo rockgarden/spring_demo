@@ -1,3 +1,4 @@
+# Maven
 target/
 pom.xml.tag
 pom.xml.releaseBackup
@@ -7,5 +8,29 @@ release.properties
 dependency-reduced-pom.xml
 buildNumber.properties
 .mvn/timing.properties
-# https://github.com/takari/maven-wrapper#usage-without-binary-jar
 .mvn/wrapper/maven-wrapper.jar
+
+# Gradle
+.gradle
+build/
+
+# Ignore Gradle GUI config
+gradle-app.setting
+
+# Eclipse
+.classpath
+.settings/
+.project
+bin/
+
+# IntelliJ
+.idea
+*.iml
+*.ipr
+*.iws
+
+# VSCode
+.vscode
+
+# Misc
+*.log
