@@ -1,0 +1,148 @@
+
+This guide walks you through the process of using https://projects.spring.io/spring-vault/[Spring Vault] to build an application that loads secrets from https://www.vaultproject.io/[HashiCorp Vault], a secrets management tool.
+
+== What you'll build
+
+You will load secrets stored in Vault and use the transit encryption backend.
+
+
+== Install and launch HashiCorp Vault
+
+With your project set up, you can install and launch HashiCorp Vault.
+
+
+If you are using a Mac with homebrew, this is as simple as:
+
+    $ brew install vault
+
+Alternatively, download Vault for your operating system from https://www.vaultproject.io/downloads.html:
+
+    $ https://releases.hashicorp.com/vault/1.4.0/vault_1.4.0_darwin_amd64.zip
+    $ unzip vault_1.2.1_darwin_amd64.zip
+
+For other systems with package management, such as Redhat, Ubuntu, Debian, CentOS, and Windows, see instructions at https://www.vaultproject.io/docs/install/index.html.
+
+After you install Vault, launch it in a console window. This command also starts up a server process.
+
+    $ vault server --dev --dev-root-token-id="00000000-0000-0000-0000-000000000000"
+
+Run in background
+
+    $ brew services start vault
+
+You should see the following as one of the last output lines:
+
+....
+[INFO ] core: post-unseal setup complete
+2020-04-23T21:40:57.377+0800 [INFO]  secrets.kv.kv_1fda6362: collecting keys to upgrade
+2020-04-23T21:40:57.377+0800 [INFO]  secrets.kv.kv_1fda6362: done collecting keys: num_keys=1
+2020-04-23T21:40:57.377+0800 [INFO]  secrets.kv.kv_1fda6362: upgrading keys finished
+....
+
+NOTE: The command above starts Vault in development mode using in-memory storage without transport encryption. This is fine for evaluating Vault locally. Make sure to use proper SSL certificates and a reliable storage backend for production use.
+Consult Vault's https://learn.hashicorp.com/vault/operations/production-hardening[Production Hardening guide] for further details.
+
+== Store secrets in Vault
+
+Vault is a secrets management system allowing you to store sensitive data which is encrypted at rest.
+It's ideal to store sensitive configuration details such as passwords, encryption keys, API keys.
+
+Launch another console window to store application configuration in Vault using the Vault command line.
+
+First, you need to set two environment variables to point the Vault CLI to the Vault endpoint and provide
+an authentication token.
+
+    $ export export VAULT_TOKEN="00000000-0000-0000-0000-000000000000"
+    $ export VAULT_ADDR="http://127.0.0.1:8200"
+
+Now you can store a configuration key-value pairs inside Vault:
+
+    $ vault kv put secret/github github.oauth2.key=foobar
+
+....
+Key              Value
+---              -----
+created_time     2020-04-23T13:44:00.773753Z
+deletion_time    n/a
+destroyed        false
+version          1
+....
+
+=== Configure your application
+
+Here you configure your application with `bootstrap.properties`. Spring Cloud Vault is configured with the bootstrap context.
+
+`src/main/resources/bootstrap.properties`
+[source,properties]
+----
+spring.cloud.vault.token=00000000-0000-0000-0000-000000000000
+spring.cloud.vault.scheme=http
+----
+
+== Create an Application class
+
+Here you create an Application class with all the components.
+
+`src/main/java/hello/Application.java`
+
+Spring Cloud Vault uses `VaultOperations` to interact with Vault. Properties from Vault get mapped to
+`MyConfiguration` for type-safe access. `@EnableConfigurationProperties(MyConfiguration.class)` enables configuration property mapping and registers a `MyConfiguration` bean.
+
+`Application` includes a `main()` method that autowires an instance of `MyConfiguration`.
+
+As our `Application` implements `CommandLineRunner`, the `run` method is invoked automatically when boot
+starts. You should see something like this:
+....
+Value of github.oauth2.key
+-------------------------------
+foobar
+-------------------------------
+
+Encrypted value
+-------------------------------
+vault:v1:2wgVE2PXiR9o55xbyur5KHJl8IwyGDkDU4l1SZScUq6BuqZYgTopwvc4
+-------------------------------
+
+Decrypted value
+-------------------------------
+Secure message
+-------------------------------
+....
+
+
+NOTE: Vault's secret backend compares well to a document store that uses URIs to identify documents. Documents are JSON-based that allows convenient object mapping of Vault data.
+
+
+== Summary
+
+Congratulations! You set up a Vault server and wrote a simple application that uses Spring Vault to read
+secrets and encrypt data with a strong cipher — all without the headache of
+implementing key management, a cipher mode, and padding.
+
+include::https://raw.githubusercontent.com/spring-guides/getting-started-macros/master/footer.adoc[]
+
+
+# 架构和主要特点
+
+Vault的架构非常简单。其主要组成部分是：
+
+* 持久性后端 —— 存储所有机密
+* 一种API服务器 —— 用于处理客户端请求并对机密执行操作
+* 许多secret引擎 —— 支持不同的机密类型
+
+通过将所有机密处理委派给Vault，我们可以缓解一些安全问题：
+
+* 我们的应用程序不再需要存储它们 ，只需在需要时询问Vault并在使用后将其丢弃
+* 我们可以短暂的使用机密数据，从而限制攻击者盗取秘密的“机会之窗”
+
+Vault会在将所有数据写入存储之前使用加密密钥对所有数据进行加密。此加密密钥由另一个密钥加密 —— 主密钥，主密钥仅在启动时使用。
+
+Vault实现的一个关键点是它不会将主密钥存储在服务器中。 这意味着即使Vault也无法在启动后访问其保存的数据。 此时，Vault实例被称为处于“密封”状态。
+
+稍后，我们将完成生成主密钥和解封Vault实例所需的步骤。
+
+一旦启封，Vault就可以接受API请求了。当然，这些请求需要身份验证，这使我们控制Vault如何对客户端进行身份验证并决定他们可以做什么或不做什么。
+
+# TODO
+
+VaultOperationsTest 运行失败

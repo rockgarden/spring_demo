@@ -1,0 +1,196 @@
+
+This guide walks you through the process of creating a Spring REST application with its contract stubs and consuming the contract within an other Spring application. https://cloud.spring.io/spring-cloud-contract[Spring Cloud Contract Project]
+
+
+== What you'll build
+
+You'll setup two micro services one providing its contract, and the other one consuming this contract to make sure that the integration to the contract provider service is aligned with the specifications. If in the future, the contract of the producer service changes, then the consumer service's tests fail catching the potential incompatibility.
+
+== Build with Gradle
+
+
+`contract-rest-service/build.gradle`
+
+[source,groovy,tabsize=2]
+----
+buildscript {
+  ext {
+    springBootVersion = '2.2.1.RELEASE'
+    verifierVersion = '2.1.1.RELEASE'
+  }
+  repositories { mavenCentral() }
+  dependencies {
+    classpath("org.springframework.boot:spring-boot-gradle-plugin:${springBootVersion}")
+    classpath "org.springframework.cloud:spring-cloud-contract-gradle-plugin:${verifierVersion}"
+  }
+}
+
+apply plugin: 'groovy'
+apply plugin: 'java'
+apply plugin: 'eclipse'
+apply plugin: 'idea'
+apply plugin: 'org.springframework.boot'
+apply plugin: 'io.spring.dependency-management'
+apply plugin: 'spring-cloud-contract'
+
+
+bootJar {
+  baseName = 'contract-rest-service'
+  version = '0.0.1-SNAPSHOT'
+}
+sourceCompatibility = 1.8
+targetCompatibility = 1.8
+
+repositories { mavenCentral() }
+
+dependencies {
+  compile('org.springframework.boot:spring-boot-starter-web')
+  testCompile('org.springframework.boot:spring-boot-starter-test')
+  testCompile('org.springframework.cloud:spring-cloud-starter-contract-verifier')
+}
+
+dependencyManagement {
+  imports {
+    mavenBom "org.springframework.cloud:spring-cloud-dependencies:Greenwich.SR1"
+  }
+}
+
+contracts {
+  packageWithBaseClasses = 'hello'
+  baseClassMappings {
+    baseClassMapping(".*hello.*", "hello.BaseClass")
+  }
+}
+----
+
+`contract-rest-client/build.gradle`
+
+[source,java,tabsize=2]
+----
+buildscript {
+  ext { springBootVersion = '2.2.1.RELEASE' }
+  repositories { mavenCentral() }
+  dependencies {
+    classpath("org.springframework.boot:spring-boot-gradle-plugin:${springBootVersion}")
+  }
+}
+
+apply plugin: 'java'
+apply plugin: 'eclipse'
+apply plugin: 'idea'
+apply plugin: 'org.springframework.boot'
+apply plugin: 'io.spring.dependency-management'
+
+bootJar {
+  baseName = 'contract-rest-client'
+  version = '0.0.1-SNAPSHOT'
+}
+sourceCompatibility = 1.8
+targetCompatibility = 1.8
+
+repositories { mavenCentral() }
+
+dependencies {
+  compile('org.springframework.boot:spring-boot-starter-web')
+  testCompile('org.springframework.boot:spring-boot-starter-test')
+  testCompile('org.springframework.cloud:spring-cloud-starter-contract-stub-runner')
+}
+
+dependencyManagement {
+  imports {
+    mavenBom "org.springframework.cloud:spring-cloud-dependencies:Greenwich.SR1"
+  }
+}
+
+eclipse {
+  classpath {
+    containers.remove('org.eclipse.jdt.launching.JRE_CONTAINER')
+    containers 'org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-1.8'
+  }
+}
+----
+
+== Create contract producer service
+
+You'll first need to create the service which produces the contract. This is a regular Spring Boot application providing a very simple REST service. The rest service simply returns a `Person` object in JSON.
+
+`contract-rest-service/src/main/java/hello/ContractRestServiceApplication.java`
+
+=== Create the contract of the REST service
+
+The contract of the REST service can be defined as a `.groovy` script. This contract specifies that if there is a `GET` request to url `/person/1`, sample data `id=1`, `name=foo` and `surname=bee` representing a `Person` entity will be returned in the response body of content-type `application/json` .
+
+REST服务的约定可以定义为.groovy脚本。 该合同规定，如果有对url / person / 1的GET请求，则将在内容类型application / json的响应正文中返回代表Person实体的示例数据id = 1，name = foo和surname = bee。
+
+`contract-rest-service/src/test/resources/contracts/hello/find_person_by_id.groovy`
+
+At the `test` phase, automatic test classes will be created for the contract specified in the groovy file. The auto generated test java classes will extend the `hello.BaseClass` (See in pom.xml).
+[source,xml]
+----
+	<plugin>
+		<groupId>org.springframework.cloud</groupId>
+		<artifactId>spring-cloud-contract-maven-plugin</artifactId>
+		<version>${spring-cloud-contract.version}</version>
+		<extensions>true</extensions>
+		<configuration>
+			<baseClassForTests>hello.BaseClass</baseClassForTests>
+		</configuration>
+	</plugin>
+----
+
+`contract-rest-service/src/test/java/hello/BaseClass.java`
+
+At this step, when the tests are executed, test results should be GREEN indicating that the REST controller is aligned with the contract and you have a fully functioning service.
+在此步骤中，执行测试时，测试结果应为绿色，表明REST控制器与合同保持一致，并且您具有功能全面的服务。
+
+==== Check the simple Person query business logic
+
+Model class `Person.java`
+`contract-rest-service/src/main/java/hello/Person.java`
+
+Service bean `PersonService.java` which just populates a few Person entity in memory and returns the one when asked.
+`contract-rest-service/src/main/java/hello/PersonService.java`
+
+RestController bean `PersonRestController.java` which calls `PersonService` bean when a REST request is received for a person with the id.
+`contract-rest-service/src/main/java/hello/PersonRestController.java`
+
+=== Test the contract-rest-service application
+
+Run the `ContractRestServiceApplication.java` class as a Java Application or Spring Boot Application. The service should start at port `8000`.
+
+Visit the service in the browser `http://localhost:8000/person/1`, `http://localhost:8000/person/2`, etc.
+
+== Create contract consumer service
+
+With the contract producer service ready, now we need to create the client application which consumes the contract provided. This is a regular Spring Boot application providing a very simple REST service. The rest service simply returns a message with the queried Person's name, e.g. `Hello Anna`.
+
+`contract-rest-client/src/main/java/hello/ContractRestClientApplication.java`
+
+=== Create the contract test
+
+The contract provided by the producer should be consumed as a simple Spring test.
+
+`contract-rest-client/src/test/java/hello/ContractRestClientApplicationTest.java`
+
+This test class will load the stubs of the contract producer service and make sure that the integration to the service is aligned with the contract.
+
+该测试类将加载合同生产者服务的存根，并确保与服务的集成与合同保持一致。
+
+In case the communication is faulty between the consumer service's test and the producer's contract, tests will fail and the problem will need to be fixed before making a new change on production.
+
+=== Test the contract-rest-client application
+
+Run the `ContractRestClientApplication.java` class as a Java Application or Spring Boot Application. The service should start at port `9000`.
+
+Visit the service in the browser `http://localhost:9000/message/1`, `http://localhost:9000/message/2`, etc.
+
+
+== Summary
+
+Congratulations! You've just used Spring to make your REST services declare their contract and consumer service be aligned with this contract.
+
+
+== TODO
+
+如何以 test 模式运行 contract-rest-service，使 test 目录下的资源可被访问？
+
