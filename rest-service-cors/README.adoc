@@ -286,14 +286,12 @@ response, as the following listing shows:
 ----
 ====
 
-This service differs slightly from the one described in
-{gs-rest-service}[Building a RESTful Web Service], in that it uses Spring Framework CORS
-support to add the relevant CORS response headers.
+This service differs slightly from the one described in {gs-rest-service}[Building a RESTful Web Service], in that it uses Spring Framework CORS
+support to add the relevant CORS response headers. 通过Spring Framework CORS支持来添加相关的CORS响应标头。
 
 === Adding the `httpclient` Dependency
 
-The tests (in
-`complete/src/test/java/com/example/restservicecors/GreetingIntegrationTests.java`)
+The tests (in `complete/src/test/java/com/example/restservicecors/GreetingIntegrationTests.java`)
 require the Apache `httpclient` library.
 
 To add the Apache `httpclient` library to Maven, add the following dependency:
@@ -309,14 +307,7 @@ To add the Apache `httpclient` library to Maven, add the following dependency:
 ----
 ====
 
-The following listing shows the finished `pom.xml` file:
-
-====
-[source,xml]
-----
-include::complete/pom.xml[]
-----
-====
+The following listing shows the finished `pom.xml` file: complete/pom.xml.
 
 To add the Apache `httpclient` library to Gradle, add the following dependency:
 
@@ -334,9 +325,7 @@ Now that you have set up the project and build system, you can create your web s
 
 Begin the process by thinking about service interactions.
 
-The service will handle `GET` requests to `/greeting`, optionally with a `name` parameter
-in the query string. The `GET` request should return a `200 OK` response with JSON in the
-body to represent a greeting. It should resemble the following listing:
+The service will handle `GET` requests to `/greeting`, optionally with a `name` parameter in the query string. The `GET` request should return a `200 OK` response with JSON in the body to represent a greeting. It should resemble the following listing:
 
 ====
 [source,json]
@@ -348,16 +337,11 @@ body to represent a greeting. It should resemble the following listing:
 ----
 ====
 
-The `id` field is a unique identifier for the greeting, and `content` is the textual
-representation of the greeting.
+The `id` field is a unique identifier for the greeting, and `content` is the textual representation of the greeting.
 
-To model the greeting representation, create a resource representation class. Provide a
-plain old Java object with fields, constructors, and accessors for the `id` and `content`
-data, as the following listing (from
-  `src/main/java/com/example/restservicecors/Greeting.java`) .
+To model the greeting representation, create a resource representation class. Provide a plain old Java object with fields, constructors, and accessors for the `id` and `content` data, as the following listing (from `src/main/java/com/example/restservicecors/Greeting.java`) .
 
-NOTE: Spring uses the {jackson}[Jackson JSON] library to automatically marshal instances
-of type `Greeting` into JSON.
+NOTE: Spring uses the {jackson}[Jackson JSON] library to automatically marshal instances of type `Greeting` into JSON.
 
 == Create a Resource Controller
 
@@ -367,12 +351,9 @@ This controller is concise and simple, but there is plenty going on under the ho
 
 The `@RequestMapping` annotation ensures that HTTP requests to `/greeting` are mapped to the `greeting()` method.
 
-NOTE: The preceding example uses the `@GetMapping` annotation, which acts as a shortcut
-for `@RequestMapping(method = RequestMethod.GET)`.
+NOTE: The preceding example uses the `@GetMapping` annotation, which acts as a shortcut for `@RequestMapping(method = RequestMethod.GET)`.
 
-`@RequestParam` binds the value of the `name` query string parameter into the `name`
-parameter of the `greeting()` method. This query string parameter is not `required`. If it
-is absent in the request, the `defaultValue` of `World` is used.
+`@RequestParam` binds the value of the `name` query string parameter into the `name` parameter of the `greeting()` method. This query string parameter is not `required`. If it is absent in the request, the `defaultValue` of `World` is used.
 
 The implementation of the method body creates and returns a new `Greeting` object, with
 the value of the `id` attribute based on the next value from the `counter` and the value
@@ -423,11 +404,11 @@ listing (from `src/main/java/com/example/restservicecors/GreetingController.java
 ----
 ====
 
-This `@CrossOrigin` annotation enables cross-origin resource sharing only for this
-specific method. By default, its allows all origins, all headers, and the HTTP methods
-specified in the `@RequestMapping` annotation. Also, a `maxAge` of 30 minutes is used. You
-can customize this behavior by specifying the value of one of the following annotation
-attributes:
+This `@CrossOrigin` annotation enables cross-origin resource sharing only for this specific method. By default, its allows all origins, all headers, and the HTTP methods specified in the `@RequestMapping` annotation.
+
+@CrossOrigin批注仅针对此特定方法启用跨域资源共享。 默认情况下，它允许所有来源，所有标头和在@RequestMapping注释中指定的HTTP方法。
+
+Also, a `maxAge` of 30 minutes is used. You can customize this behavior by specifying the value of one of the following annotation attributes:
 
 * `origins`
 * `methods`
@@ -438,8 +419,7 @@ attributes:
 
 In this example, we allow only `http://localhost:9000` to send cross-origin requests.
 
-NOTE: You can also add the `@CrossOrigin` annotation at the controller class level as
-well, to enable  CORS on all handler methods of this class.
+NOTE: You can also add the `@CrossOrigin` annotation at the controller class level as well, to enable CORS on all handler methods of this class.
 
 [[global-cors-configuration]]
 === Global CORS configuration
@@ -577,15 +557,11 @@ java -jar target/rest-service-cors-0.0.1-SNAPSHOT.jar --server.port=9000
 ----
 ====
 
-
-Once the client starts, open http://localhost:9000 in your browser, where you should see
-the following:
+Once the client starts, open http://localhost:9000 in your browser, where you should see the following:
 
 image::images/hello.png[Model data retrieved from the REST service is rendered into the DOM if the proper CORS headers are in the response.]
 
-If the service response includes the CORS headers, then the ID and content are rendered
-into the page. But if the CORS headers are missing (or insufficiently defined for the
-client), the browser fails the request and the values are not rendered into the DOM. 
+If the service response includes the CORS headers, then the ID and content are rendered into the page. But if the CORS headers are missing (or insufficiently defined for the client), the browser fails the request and the values are not rendered into the DOM. 
 
 如果服务响应包含CORS标头，则ID和内容将呈现到页面中。 但是，如果缺少CORS标头（或未为客户端充分定义），则浏览器将使请求失败，并且不会将值呈现到DOM中。
 
