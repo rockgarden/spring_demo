@@ -1,9 +1,12 @@
 package hello;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.vault.core.VaultKeyValueOperationsSupport.KeyValueBackend;
 import org.springframework.vault.core.VaultSysOperations;
 import org.springframework.vault.core.VaultTemplate;
@@ -12,10 +15,17 @@ import org.springframework.vault.support.VaultMount;
 import org.springframework.vault.support.VaultResponse;
 
 @SpringBootApplication
+@EnableConfigurationProperties(MyConfiguration.class)
 public class Application implements CommandLineRunner {
 
 	@Autowired
 	private VaultTemplate vaultTemplate;
+
+	private final MyConfiguration configuration;
+
+	public Application(MyConfiguration configuration) {
+		this.configuration = configuration;
+	}
 
 	public static void main(String[] args) {
 		SpringApplication.run(Application.class, args);
@@ -23,6 +33,14 @@ public class Application implements CommandLineRunner {
 
 	@Override
 	public void run(String... strings) throws Exception {
+
+		Logger logger = LoggerFactory.getLogger(Application.class);
+
+		logger.info("----------------------------------------");
+		logger.info("Configuration properties");
+		logger.info("		example.username is {}", configuration.getUsername());
+		logger.info("		example.password is {}", configuration.getPassword());
+		logger.info("----------------------------------------");
 
 		// You usually would not print a secret to stdout
 		VaultResponse response = vaultTemplate.opsForKeyValue("secret", KeyValueBackend.KV_2).get("github");
