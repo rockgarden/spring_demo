@@ -1,3 +1,13 @@
+# 更新
+
+1.13 version 后 stat-view-servlet.allow 的默认配置为 127.0.0.1，即只可 localhost 访问，若要开放访问需配置如下：
+
+```
+ stat-view-servlet:
+    allow:
+    deny:
+```
+
 # mysql
 
 ```sql
