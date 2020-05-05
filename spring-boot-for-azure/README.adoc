@@ -1,0 +1,108 @@
+
+This article walks you through deploying an application to Azure. 
+
+IMPORTANT: You are recommended to check out https://docs.microsoft.com/java/azure/spring-framework/deploy-spring-boot-java-app-with-maven-plugin[offical Azure docs] for the latest instructions for the same task.
+
+== What you'll build
+
+You'll clone a sample Spring Boot application from GitHub and then use Maven to deploy it to Azure.
+
+== What you'll need
+
+The following prerequisites are required in order to follow the steps in this article:
+
+* An Azure subscription. If you don't already have an Azure subscription, you can sign up for a https://azure.microsoft.com/pricing/free-trial/[free Azure account] or activate your https://azure.microsoft.com/pricing/member-offers/msdn-benefits-details/[MSDN subscriber benefits].
+* An up-to-date http://www.oracle.com/technetwork/java/javase/downloads/[Java Development Kit (JDK)], version 1.8 or later.
+* A https://github.com/[Git] client.
+
+== Build and run a sample Spring Boot web app locally
+
+== Config and deploy the app to Azure
+
+. From the terminal window, config your web app with https://github.com/microsoft/azure-maven-plugins/blob/develop/azure-webapp-maven-plugin/README.md/[Maven Plugin for Azure Web App] by typing `./mvnw com.microsoft.azure:azure-webapp-maven-plugin:1.8.0:config`. This mavne goal will first authenticate with Azure, if you have logged in with https://docs.microsoft.com/en-us/cli/azure/[Azure CLI], it will consume its existing authentication token. Otherwise, it will get you logged in with https://github.com/microsoft/azure-maven-plugins/wiki/Azure-Maven-Plugin/[azure-maven-plugin] automatically.
+. Then you can configure the deployment, run the maven command in the Command Prompt and use the default configurations by pressing *ENTER* until you get the *Confirm (Y/N)* prompt, press *'y'* and the configuration is done.
++
+----
+~@Azure:~/gs-spring-boot/complete$ mvn azure-webapp:config
+[INFO] Scanning for projects...
+[INFO]
+[INFO] -----------------< org.springframework:gs-spring-boot >-----------------
+[INFO] Building gs-spring-boot 0.1.0
+[INFO] --------------------------------[ jar ]---------------------------------
+[INFO]
+[INFO] --- azure-webapp-maven-plugin:1.6.0:config (default-cli) @ gs-spring-boot ---
+[WARNING] The plugin may not work if you change the os of an existing webapp.
+Define value for OS(Default: Linux):
+1. linux [*]
+2. windows
+3. docker
+Enter index to use:
+Define value for javaVersion(Default: Java 8):
+1. Java 11
+2. Java 8 [*]
+Enter index to use:
+Please confirm webapp properties
+AppName : gs-spring-boot-1559091271202
+ResourceGroup : gs-spring-boot-1559091271202-rg
+Region : westeurope
+PricingTier : Premium_P1V2
+OS : Linux
+RuntimeStack : JAVA 8-jre8
+Deploy to slot : false
+Confirm (Y/N)? : Y
+----
++
+. Then, open your *pom.xml* to see all the configuration written, and add the *<appSettings>* section to the *<configuration>* section of *<azure-webapp-maven-plugin>* to listen on the *80* port.
++
+----
+<plugin>
+    <groupId>com.microsoft.azure</groupId>
+    <artifactId>azure-webapp-maven-plugin</artifactId>
+    <version>1.8.0</version>
+    <configuration>
+       <schemaVersion>V2</schemaVersion>
+       <resourceGroup>gs-spring-boot-1559091271202-rg</resourceGroup>
+       <appName>gs-spring-boot-1559091271202</appName>
+       <region>westeurope</region>
+       <pricingTier>P1V2</pricingTier>
+       <runtime>
+         <os>linux</os>
+         <javaVersion>jre8</javaVersion>
+         <webContainer>jre8</webContainer>
+       </runtime>
+       <!-- Begin of App Settings  -->
+       <appSettings>
+          <property>
+                <name>JAVA_OPTS</name>
+                <value>-Dserver.port=80</value>
+          </property>
+       </appSettings>
+       <!-- End of App Settings  -->
+       <deployment>
+         <resources>
+           <resource>
+             <directory>${project.basedir}/target</directory>
+             <includes>
+               <include>*.jar</include>
+             </includes>
+           </resource>
+         </resources>
+       </deployment>
+      </configuration>
+</plugin>
+----
++
+. Once you have configured all of the settings in the preceding sections of this article, you are ready to deploy your web app to Azure with `mvn azure-webapp:deploy`. Maven will deploy your web app to Azure; if the web app or web app plan does not already exist, it will be created for you. It might take a few minutes before the web app is accessible at the URL shown in the output. Navigate to the URL in a Web browser. You should see the message displayed: Greetings from Spring Boot!
+
+== Summary
+
+Congratulations! You built and deployed a Spring Boot app to Azure. You can visit the https://portal.azure.com/[Azure portal] to manage it. 
+
+IMPORTANT: Don't forget to delete the Azure resources created if no longer needed. 
+
+== See also
+
+Additional information about using Spring with Azure is available here:
+
+* https://docs.microsoft.com/java/azure/spring-framework/[Spring on Azure]
+* https://docs.microsoft.com/java/azure/spring-framework/deploy-spring-boot-java-app-with-maven-plugin[Deploying a Spring Boot app to the cloud using the Maven Plugin for Azure Web Apps]
